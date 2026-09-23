@@ -1,8 +1,7 @@
 macro_rules! check_int_clamp {
-    ($t:ty, $ut:ty) => {
+    ($t:ty) => {
         let min = <$t>::MIN;
         let max = <$t>::MAX;
-        let max_u = <$ut>::MAX;
 
         // Basic clamping
         assert_eq!((100 as $t).clamp_magnitude(50), 50);
@@ -22,47 +21,39 @@ macro_rules! check_int_clamp {
 
         // MIN/MAX values
         // Symmetric range [-MAX, MAX]
-        assert_eq!(max.clamp_magnitude(max as $ut), max);
-        assert_eq!(min.clamp_magnitude(max as $ut), -max);
-
-        // Full range (limit covers MIN)
-        let min_abs = min.unsigned_abs();
-        assert_eq!(min.clamp_magnitude(min_abs), min);
-
-        // Limit larger than type max (uN > iN::MAX)
-        assert_eq!(max.clamp_magnitude(max_u), max);
-        assert_eq!(min.clamp_magnitude(max_u), min);
+        assert_eq!(max.clamp_magnitude(max), max);
+        assert_eq!(min.clamp_magnitude(max), -max);
     };
 }
 
 #[test]
 fn test_clamp_magnitude_i8() {
-    check_int_clamp!(i8, u8);
+    check_int_clamp!(i8);
 }
 
 #[test]
 fn test_clamp_magnitude_i16() {
-    check_int_clamp!(i16, u16);
+    check_int_clamp!(i16);
 }
 
 #[test]
 fn test_clamp_magnitude_i32() {
-    check_int_clamp!(i32, u32);
+    check_int_clamp!(i32);
 }
 
 #[test]
 fn test_clamp_magnitude_i64() {
-    check_int_clamp!(i64, u64);
+    check_int_clamp!(i64);
 }
 
 #[test]
 fn test_clamp_magnitude_i128() {
-    check_int_clamp!(i128, u128);
+    check_int_clamp!(i128);
 }
 
 #[test]
 fn test_clamp_magnitude_isize() {
-    check_int_clamp!(isize, usize);
+    check_int_clamp!(isize);
 }
 
 macro_rules! check_float_clamp {
@@ -115,25 +106,25 @@ fn test_clamp_magnitude_f64() {
 }
 
 #[test]
-#[should_panic(expected = "limit must be non-negative")]
+#[should_panic(expected = "limit must be non-negative and not NaN")]
 fn test_clamp_magnitude_f32_panic_negative_limit() {
     let _ = 1.0f32.clamp_magnitude(-1.0);
 }
 
 #[test]
-#[should_panic(expected = "limit must be non-negative")]
+#[should_panic(expected = "limit must be non-negative and not NaN")]
 fn test_clamp_magnitude_f64_panic_negative_limit() {
     let _ = 1.0f64.clamp_magnitude(-1.0);
 }
 
 #[test]
-#[should_panic]
+#[should_panic(expected = "limit must be non-negative and not NaN")]
 fn test_clamp_magnitude_f32_panic_nan_limit() {
     let _ = 1.0f32.clamp_magnitude(f32::NAN);
 }
 
 #[test]
-#[should_panic]
+#[should_panic(expected = "limit must be non-negative and not NaN")]
 fn test_clamp_magnitude_f64_panic_nan_limit() {
     let _ = 1.0f64.clamp_magnitude(f64::NAN);
 }

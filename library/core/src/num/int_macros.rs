@@ -3959,6 +3959,10 @@ macro_rules! int_impl {
         /// This is functionally equivalent to `self.clamp(-limit, limit)`, but is more
         /// explicit about the intent.
         ///
+        /// # Panics
+        ///
+        /// Panics if `limit` is negative, as this indicates a logic error.
+        ///
         /// # Examples
         ///
         /// ```
@@ -3968,15 +3972,13 @@ macro_rules! int_impl {
         #[doc = concat!("assert_eq!(80", stringify!($SelfT), ".clamp_magnitude(100), 80);")]
         #[doc = concat!("assert_eq!(-80", stringify!($SelfT), ".clamp_magnitude(100), -80);")]
         /// ```
-        #[must_use = "this returns the clamped value and does not modify the original"]
-        #[unstable(feature = "clamp_magnitude", issue = "148519")]
         #[inline]
-        pub fn clamp_magnitude(self, limit: $UnsignedT) -> Self {
-            if let Ok(limit) = core::convert::TryInto::<$SelfT>::try_into(limit) {
-                self.clamp(-limit, limit)
-            } else {
-                self
-            }
+        #[unstable(feature = "clamp_magnitude", issue = "148519")]
+        #[rustc_const_unstable(feature = "clamp_magnitude", issue = "148519")]
+        #[must_use = "method returns a new number and does not mutate the original value"]
+        pub const fn clamp_magnitude(self, limit: $SelfT) -> Self {
+            assert!(limit >= 0, "limit must be non-negative");
+            self.clamp(-limit, limit)
         }
 
         /// Truncate an integer to an integer of the same size or smaller, preserving the least
