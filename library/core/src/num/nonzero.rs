@@ -1607,38 +1607,6 @@ macro_rules! nonzero_integer_signedness_dependent_impls {
     };
     // Impls for signed nonzero types only.
     (signed $Int:ty) => {
-        impl NonZero<$Int> {
-            /// clamps this number to a symmetric range centred around zero. the method clamps the number's magnitude (absolute value) to be at most `limit`.
-            ///
-            /// this is functionally equivalent to `self.clamp(-limit, limit)`, but is more
-            /// explicit about the intent.
-            ///
-            /// # Panics
-            ///
-            /// Panics if `limit` is negative, as this indicates a logic error.
-            ///
-            /// # Examples
-            ///
-            /// ```
-            /// #![feature(clamp_magnitude)]
-            /// # use std::num::NonZero;
-            /// #
-            #[doc = concat!("let limit = NonZero::<", stringify!($Int), ">::new(100).unwrap();")]
-            #[doc = concat!("assert_eq!(NonZero::<", stringify!($Int), ">::new(120).unwrap().clamp_magnitude(limit), NonZero::new(100).unwrap());")]
-            #[doc = concat!("assert_eq!(NonZero::<", stringify!($Int), ">::new(-120).unwrap().clamp_magnitude(limit), NonZero::new(-100).unwrap());")]
-            #[doc = concat!("assert_eq!(NonZero::<", stringify!($Int), ">::new(80).unwrap().clamp_magnitude(limit), NonZero::new(80).unwrap());")]
-            #[doc = concat!("assert_eq!(NonZero::<", stringify!($Int), ">::new(-80).unwrap().clamp_magnitude(limit), NonZero::new(-80).unwrap());")]
-            /// ```
-            #[inline]
-            #[must_use = "method returns a new number and does not mutate the original value"]
-            #[rustc_const_unstable(feature = "clamp_magnitude", issue = "148519")]
-            #[unstable(feature = "clamp_magnitude", issue = "148519")]
-            pub const fn clamp_magnitude(self, limit: Self) -> Self {
-                // SAFETY: a non-zero value clamped to the magnitude of a non-zero value is still non-zero.
-                unsafe { Self::new_unchecked(self.get().clamp_magnitude(limit.get())) }
-            }
-        }
-
         #[stable(feature = "signed_nonzero_neg", since = "1.71.0")]
         #[rustc_const_unstable(feature = "const_ops", issue = "143802")]
         const impl Neg for NonZero<$Int> {
@@ -2486,6 +2454,35 @@ macro_rules! nonzero_integer_signedness_dependent_methods {
             unsafe { NonZero::new_unchecked(self.get().cast_unsigned()) }
         }
 
+        /// clamps this number to a symmetric range centred around zero. the method clamps the number's magnitude (absolute value) to be at most `limit`.
+        ///
+        /// this is functionally equivalent to `self.clamp(-limit, limit)`, but is more
+        /// explicit about the intent.
+        ///
+        /// # Panics
+        ///
+        /// Panics if `limit` is negative, as this indicates a logic error.
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// #![feature(clamp_magnitude)]
+        /// # use std::num::NonZero;
+        /// #
+        #[doc = concat!("let limit = NonZero::<", stringify!($Int), ">::new(100).unwrap();")]
+        #[doc = concat!("assert_eq!(NonZero::<", stringify!($Int), ">::new(120).unwrap().clamp_magnitude(limit), NonZero::new(100).unwrap());")]
+        #[doc = concat!("assert_eq!(NonZero::<", stringify!($Int), ">::new(-120).unwrap().clamp_magnitude(limit), NonZero::new(-100).unwrap());")]
+        #[doc = concat!("assert_eq!(NonZero::<", stringify!($Int), ">::new(80).unwrap().clamp_magnitude(limit), NonZero::new(80).unwrap());")]
+        #[doc = concat!("assert_eq!(NonZero::<", stringify!($Int), ">::new(-80).unwrap().clamp_magnitude(limit), NonZero::new(-80).unwrap());")]
+        /// ```
+        #[inline]
+        #[must_use = "method returns a new number and does not mutate the original value"]
+        #[rustc_const_unstable(feature = "clamp_magnitude", issue = "148519")]
+        #[unstable(feature = "clamp_magnitude", issue = "148519")]
+        pub const fn clamp_magnitude(self, limit: Self) -> Self {
+            // SAFETY: a non-zero value clamped to the magnitude of a non-zero value is still non-zero.
+            unsafe { Self::new_unchecked(self.get().clamp_magnitude(limit.get())) }
+        }
     };
 }
 
